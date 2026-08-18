@@ -1,0 +1,26 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Beta Build to Crashlytics Beta"
+  lane :beta do
+    gradle(
+      task: "assemble",
+      build_type: "Release"
+    )
+    # crashlytics(apk_path: "app/build/outputs/apk/release/app-release.apk")
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :release do
+    gradle(
+      task: "bundle",
+      build_type: "Release"
+    )
+    upload_to_play_store(track: 'internal')
+  end
+end

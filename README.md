@@ -1,11 +1,44 @@
-<div align="center">
+# Aura Studio
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A production-ready multi-module Android monorepo.
 
-  <h1>Built with AI Studio</h2>
+## Project Metadata
+- **Project name**: Aura Studio
+- **ApplicationId / package**: com.example
+- **Compile SDK**: 35
+- **Min SDK**: 24
+- **Target SDK**: 35
+- **Kotlin version**: 2.0.21
+- **Compose enabled**: true
+- **Version code**: 1
+- **Version name**: 1.0
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Setup Instructions
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. **Environment Setup**
+   Copy the example properties files:
+   ```bash
+   cp gradle.properties.example gradle.properties
+   cp local.properties.example local.properties
+   ```
+   Fill in your local values.
 
-</div>
+2. **Generate Keystore**
+   If you do not have a keystore, run:
+   ```bash
+   ./scripts/generate-keystore.sh
+   ```
+   Then, update the `KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` in your `gradle.properties` or environment variables.
+
+3. **Building the App**
+   To build both the APK and AAB for release:
+   ```bash
+   ./gradlew :app:assembleRelease :app:bundleRelease
+   ```
+
+4. **Verification**
+   Verify the signed output:
+   ```bash
+   apksigner verify app/build/outputs/apk/release/app-release.apk
+   jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+   ```

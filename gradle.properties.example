@@ -1,0 +1,10 @@
+# Example gradle.properties
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+android.enableJetifier=true
+
+# Secrets (Do not commit the real gradle.properties)
+KEYSTORE_PATH=debug.keystore
+KEYSTORE_PASSWORD=android
+KEY_ALIAS=androiddebugkey
+KEY_PASSWORD=android
