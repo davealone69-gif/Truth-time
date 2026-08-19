@@ -10,13 +10,6 @@ android {
   namespace = "com.example"
   compileSdk = 35
 
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-  }
-
-  kotlinOptions { jvmTarget = "17" }
-
   defaultConfig {
     applicationId = "com.example"
     minSdk = 24
@@ -46,7 +39,6 @@ android {
         keyPassword = "android"
       }
     }
-    // else: leave the default "debug" signing config alone (AGP default keystore)
 
     create("release") {
       val keyPath =
@@ -64,8 +56,6 @@ android {
             System.getenv("KEY_PASSWORD")
                 ?: project.findProperty("KEY_PASSWORD") as String?
       }
-      // If no release keystore is configured, release builds will fail at signing time
-      // (intentional — never fall back to debug keystore for release).
     }
   }
 
@@ -80,10 +70,16 @@ android {
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
-      // Uses the default debug signing config (or the custom one if a keystore was found).
-      // Do not force a non-existent storeFile.
+      // Default AGP debug signing (or custom keystore if present above).
     }
   }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+
+  kotlinOptions { jvmTarget = "17" }
 
   buildFeatures {
     compose = true
@@ -99,21 +95,19 @@ dependencies {
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
 
+  implementation(platform(libs.androidx.compose.bom))
   implementation(libs.androidx.ui)
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
-  implementation(platform(libs.androidx.compose.bom))
   implementation(libs.androidx.material3)
   implementation(libs.androidx.material.icons.extended)
-  implementation("androidx.navigation:navigation-compose:2.8.7")
+  implementation(libs.androidx.navigation.compose)
+
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   ksp(libs.androidx.room.compiler)
+
   implementation(libs.androidx.work.runtime.ktx)
-  implementation("androidx.room:room-ktx:2.6.1")
-  implementation("androidx.room:room-runtime:2.6.1")
-  ksp("androidx.room:room-compiler:2.6.1")
-  implementation("androidx.work:work-runtime-ktx:2.10.0")
 
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
