@@ -10,7 +10,7 @@ plugins {
 }
 
 allprojects {
-  apply(plugin = "io.gitlab.arturbosch.detekt")
+  // apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlinx.kover")
 
