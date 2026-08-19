@@ -1,4 +1,5 @@
 name: Android CI
+
 on:
   push:
     branches: [ "main", "master" ]
@@ -10,28 +11,51 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Remove corrupt wrapper if exists
-        run: rm -f gradle/wrapper/gradle-wrapper.jar
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 17
-      - name: Setup Gradle
+          java-version: '17'
+
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 9.3.1
-      - name: Generate fresh wrapper
+
+      - name: Configure AndroidX
+        run: |
+          cat > gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.enableJetifier=true
+          EOF
+
+      - name: Generate Gradle wrapper
         run: gradle wrapper
+
       - name: Grant execute permission to Gradle
         run: chmod +x ./gradlew
-      - name: Build and Test
-        run: ./gradlew assembleDebug testDebugUnitTest
-      # Run Lint
+
+      - name: Build and test
+        run: ./gradlew assembleDebug testDebugUnitTest --stacktrace
+
       - name: Android Lint
         run: ./gradlew lintDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: truth-time-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
