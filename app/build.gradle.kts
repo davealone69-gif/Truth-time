@@ -19,58 +19,49 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  // IMPORTANT: Do NOT customize the "debug" signingConfig.
+  // AGP ships a working default that uses ~/.android/debug.keystore
+  // (auto-created). Any storeFile pointing at a missing path breaks CI.
   signingConfigs {
-    // Optional custom debug keystore (root or app/). If absent, AGP uses the default
-    // ~/.android/debug.keystore which is auto-created and works in CI.
-    val rootKeystore = rootProject.file("debug.keystore")
-    val appKeystore = file("debug.keystore")
-    val activeKeystore =
-        when {
-          rootKeystore.exists() -> rootKeystore
-          appKeystore.exists() -> appKeystore
-          else -> null
-        }
-
-    if (activeKeystore != null) {
-      getByName("debug") {
-        storeFile = activeKeystore
-        storePassword = "android"
-        keyAlias = "androiddebugkey"
-        keyPassword = "android"
-      }
-    }
-
     create("release") {
       val keyPath =
           System.getenv("KEYSTORE_PATH")
-              ?: project.findProperty("KEYSTORE_PATH") as String?
-      if (keyPath != null) {
-        storeFile = rootProject.file(keyPath)
-        storePassword =
-            System.getenv("KEYSTORE_PASSWORD")
-                ?: project.findProperty("KEYSTORE_PASSWORD") as String?
-        keyAlias =
-            System.getenv("KEY_ALIAS")
-                ?: project.findProperty("KEY_ALIAS") as String?
-        keyPassword =
-            System.getenv("KEY_PASSWORD")
-                ?: project.findProperty("KEY_PASSWORD") as String?
+              ?: (project.findProperty("KEYSTORE_PATH") as String?)
+      if (!keyPath.isNullOrBlank()) {
+        val keystoreFile = rootProject.file(keyPath)
+        if (keystoreFile.exists()) {
+          storeFile = keystoreFile
+          storePassword =
+              System.getenv("KEYSTORE_PASSWORD")
+                  ?: (project.findProperty("KEYSTORE_PASSWORD") as String?)
+          keyAlias =
+              System.getenv("KEY_ALIAS")
+                  ?: (project.findProperty("KEY_ALIAS") as String?)
+          keyPassword =
+              System.getenv("KEY_PASSWORD")
+                  ?: (project.findProperty("KEY_PASSWORD") as String?)
+        }
       }
     }
   }
 
   buildTypes {
-    release {
+    getByName("debug") {
+      // Leave signingConfig unset → AGP default debug keystore
+      signingConfig = null
+    }
+    getByName("release") {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(
           getDefaultProguardFile("proguard-android-optimize.txt"),
           "proguard-rules.pro",
       )
-      signingConfig = signingConfigs.getByName("release")
-    }
-    debug {
-      // Default AGP debug signing (or custom keystore if present above).
+      // Only attach release signing when a real keystore was configured
+      val releaseCfg = signingConfigs.findByName("release")
+      if (releaseCfg?.storeFile != null && releaseCfg.storeFile!!.exists()) {
+        signingConfig = releaseCfg
+      }
     }
   }
 
