@@ -11,13 +11,6 @@ android {
     namespace = "com.example"
     compileSdk = 34
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions { jvmTarget = "17" }
-
     defaultConfig {
         applicationId = "com.aurastudio.app"
         minSdk = 26
@@ -30,29 +23,6 @@ android {
     }
 
     signingConfigs {
-        val rootKeystore = rootProject.file("debug.keystore")
-        val appKeystore = file("debug.keystore")
-        val activeKeystore =
-            when {
-                rootKeystore.exists() -> rootKeystore
-                appKeystore.exists() -> appKeystore
-                else -> null
-            }
-        if (activeKeystore != null) {
-            getByName("debug") {
-                storeFile = activeKeystore
-                storePassword = "android"
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-            }
-            create("debugConfig") {
-                storeFile = activeKeystore
-                storePassword = "android"
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-            }
-        }
-
         create("release") {
             val keyPath = System.getenv("KEYSTORE_PATH") ?: project.findProperty("KEYSTORE_PATH") as String?
             if (keyPath != null) {
@@ -60,30 +30,7 @@ android {
                 storePassword = System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") as String?
                 keyAlias = System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") as String?
                 keyPassword = System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") as String?
-            } else {
-                val rootKeystore = rootProject.file("debug.keystore")
-                val appKeystore = file("debug.keystore")
-                val activeKeystore =
-                    when {
-                        rootKeystore.exists() -> rootKeystore
-                        appKeystore.exists() -> appKeystore
-                        else -> null
-                    }
-                if (activeKeystore != null) {
-                    storeFile = activeKeystore
-                    storePassword = "android"
-                    keyAlias = "androiddebugkey"
-                    keyPassword = "android"
-                }
             }
-        }
-
-        // Explicitly configure debug signing to avoid checkDebugAarMetadata issues
-        getByName("debug") {
-            storeFile = rootProject.file("app/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
         }
     }
 
@@ -91,14 +38,16 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("release")
         }
         debug {
-            val debugConfig = signingConfigs.findByName("debugConfig")
-            if (debugConfig?.storeFile != null) {
-                signingConfig = debugConfig
-            }
+            // Intentionally use Android Gradle Plugin's default debug keystore.
+            // Do not require app/debug.keystore in CI or source control.
+            isDebuggable = true
         }
     }
 
@@ -138,10 +87,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
-
-    // Hilt / Dagger are missing from toml, using raw for what's already there if needed,
-    // but the original cat showed it wasn't there? Wait, the previous cat showed it didn't have Hilt.
-    // The codebase has Hilt though! Let's check if the build fails, if so I'll add them.
 
     testImplementation(libs.junit)
     testImplementation(libs.test.robolectric)
