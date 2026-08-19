@@ -9,24 +9,24 @@ import com.example.data.local.entity.LocalAvatarEntity
 
 @Database(entities = [LocalAvatarEntity::class], version = 1, exportSchema = false)
 abstract class LocalAvatarDatabase : RoomDatabase() {
+    abstract fun localAvatarDao(): LocalAvatarDao
 
-  abstract fun localAvatarDao(): LocalAvatarDao
+    companion object {
+        @Volatile private var INSTANCE: LocalAvatarDatabase? = null
 
-  companion object {
-    @Volatile private var INSTANCE: LocalAvatarDatabase? = null
-
-    fun getDatabase(context: Context): LocalAvatarDatabase {
-      return INSTANCE
-          ?: synchronized(this) {
-            val instance =
-                Room.databaseBuilder(
-                        context.applicationContext,
-                        LocalAvatarDatabase::class.java,
-                        "local_avatar_database")
-                    .build()
-            INSTANCE = instance
-            instance
-          }
+        fun getDatabase(context: Context): LocalAvatarDatabase {
+            return INSTANCE
+                ?: synchronized(this) {
+                    val instance =
+                        Room.databaseBuilder(
+                            context.applicationContext,
+                            LocalAvatarDatabase::class.java,
+                            "local_avatar_database",
+                        )
+                            .build()
+                    INSTANCE = instance
+                    instance
+                }
+        }
     }
-  }
 }

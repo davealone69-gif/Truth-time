@@ -13,21 +13,20 @@ import kotlinx.coroutines.withContext
 
 @HiltWorker
 class LocalSwarmSyncWorker
-@AssistedInject
-constructor(
-    @Assisted appContext: Context,
-    @Assisted workerParams: WorkerParameters,
-    private val repository: LocalStudioRepository
-) : CoroutineWorker(appContext, workerParams) {
-
-  override suspend fun doWork(): Result =
-      withContext(Dispatchers.IO) {
-        try {
-          println("[SWARM WORKER] Executing background sync via injected repository...")
-          delay(500)
-          Result.success()
-        } catch (e: Exception) {
-          Result.failure()
-        }
-      }
-}
+    @AssistedInject
+    constructor(
+        @Assisted appContext: Context,
+        @Assisted workerParams: WorkerParameters,
+        private val repository: LocalStudioRepository,
+    ) : CoroutineWorker(appContext, workerParams) {
+        override suspend fun doWork(): Result =
+            withContext(Dispatchers.IO) {
+                try {
+                    println("[SWARM WORKER] Executing background sync via injected repository...")
+                    delay(500)
+                    Result.success()
+                } catch (e: Exception) {
+                    Result.failure()
+                }
+            }
+    }

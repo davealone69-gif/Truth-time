@@ -12,7 +12,7 @@ data class ChatMessageEntity(
     val timestamp: Long = System.currentTimeMillis(),
     val personaId: String,
     val imageUrl: String? = null,
-    val videoUrl: String? = null
+    val videoUrl: String? = null,
 )
 
 @Entity(tableName = "personas")
@@ -24,7 +24,7 @@ data class PersonaEntity(
     val styleVibe: String,
     val defaultGreeting: String,
     val primaryColorHex: Long,
-    val isCustom: Boolean = false
+    val isCustom: Boolean = false,
 )
 
 @Entity(tableName = "swarm_logs")
@@ -37,7 +37,7 @@ data class SwarmLogEntity(
     val executionLatencyMs: Long,
     val isSelfHealed: Boolean = false,
     val rawOutputJson: String,
-    val status: String = "SUCCESS"
+    val status: String = "SUCCESS",
 )
 
 @Entity(tableName = "users")
@@ -46,7 +46,7 @@ data class UserEntity(
     val username: String = "Master",
     val relationshipLevel: Int = 1,
     val affinityScore: Int = 100,
-    val preferredPersonaId: String = "crazzers_ai"
+    val preferredPersonaId: String = "crazzers_ai",
 )
 
 @Entity(tableName = "media_assets")
@@ -56,5 +56,5 @@ data class MediaAssetEntity(
     val mediaType: String,
     val urlOrPath: String,
     val prompt: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
 )

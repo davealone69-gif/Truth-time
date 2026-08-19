@@ -1,26 +1,14 @@
-import sys
+import re
 
-filepath = 'app/build.gradle.kts'
-with open(filepath, 'r') as f:
+path = "app/build.gradle.kts"
+with open(path, "r") as f:
     content = f.read()
 
-target = """  namespace = "com.example"
-  compileSdk = 35"""
+lines = content.split('\n')
+for i, line in enumerate(lines):
+    if "buildConfigField" in line and "GEMINI_API_KEY" in line:
+        lines[i] = '        val apiKey = project.findProperty("GEMINI_API_KEY") as? String ?: ""\n        buildConfigField("String", "GEMINI_API_KEY", "\\"$apiKey\\"")'
+content = '\n'.join(lines)
 
-replacement = """  namespace = "com.example"
-  compileSdk = 35
-  
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-  }
-  
-  kotlinOptions { jvmTarget = "17" }"""
-
-if target in content:
-    with open(filepath, 'w') as f:
-        f.write(content.replace(target, replacement))
-    print("Fixed compileOptions location!")
-else:
-    print("Target not found.")
-
+with open(path, "w") as f:
+    f.write(content)

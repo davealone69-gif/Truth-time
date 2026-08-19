@@ -8,9 +8,8 @@ import javax.inject.Inject
 
 @HiltAndroidApp
 class AuraStudioApp : Application(), Configuration.Provider {
+    @Inject lateinit var workerFactory: LocalSwarmSyncWorkerFactory
 
-  @Inject lateinit var workerFactory: LocalSwarmSyncWorkerFactory
-
-  override val workManagerConfiguration: Configuration
-    get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
 }

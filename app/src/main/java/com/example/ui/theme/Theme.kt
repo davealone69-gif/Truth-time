@@ -1,14 +1,13 @@
 package com.example.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme =
     darkColorScheme(
-        primary = GoldAccent,
-        onPrimary = Color.Black,
+        primary = PurpleAccent,
+        onPrimary = Color.White,
         primaryContainer = CardSurfaceVariant,
         onPrimaryContainer = TextPrimary,
         secondary = VelvetPurple,
@@ -20,9 +19,13 @@ private val DarkColorScheme =
         onSurface = TextPrimary,
         surfaceVariant = CardSurfaceVariant,
         onSurfaceVariant = TextSecondary,
-        outline = DividerColor)
+        outline = DividerColor,
+    )
 
 @Composable
-fun AuraStudioTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-  MaterialTheme(colorScheme = DarkColorScheme, typography = Typography(), content = content)
+fun AuraStudioTheme(
+    darkTheme: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    MaterialTheme(colorScheme = DarkColorScheme, typography = Typography(), content = content)
 }

@@ -19,33 +19,37 @@ import com.example.data.local.entity.LocalAvatarEntity
             SwarmLogEntity::class,
             UserEntity::class,
             MediaAssetEntity::class,
-            LocalAvatarEntity::class],
+            LocalAvatarEntity::class,
+        ],
     version = 2,
-    exportSchema = false)
+    exportSchema = false,
+)
 abstract class AuraDatabase : RoomDatabase() {
+    abstract fun chatDao(): ChatDao
 
-  abstract fun chatDao(): ChatDao
+    abstract fun personaDao(): PersonaDao
 
-  abstract fun personaDao(): PersonaDao
+    abstract fun swarmLogDao(): SwarmLogDao
 
-  abstract fun swarmLogDao(): SwarmLogDao
+    abstract fun localAvatarDao(): LocalAvatarDao
 
-  abstract fun localAvatarDao(): LocalAvatarDao
+    companion object {
+        @Volatile private var INSTANCE: AuraDatabase? = null
 
-  companion object {
-    @Volatile private var INSTANCE: AuraDatabase? = null
-
-    fun getInstance(context: Context): AuraDatabase {
-      return INSTANCE
-          ?: synchronized(this) {
-            val instance =
-                Room.databaseBuilder(
-                        context.applicationContext, AuraDatabase::class.java, "aura_studio.db")
-                    .fallbackToDestructiveMigration()
-                    .build()
-            INSTANCE = instance
-            instance
-          }
+        fun getInstance(context: Context): AuraDatabase {
+            return INSTANCE
+                ?: synchronized(this) {
+                    val instance =
+                        Room.databaseBuilder(
+                            context.applicationContext,
+                            AuraDatabase::class.java,
+                            "aura_studio.db",
+                        )
+                            .fallbackToDestructiveMigration()
+                            .build()
+                    INSTANCE = instance
+                    instance
+                }
+        }
     }
-  }
 }

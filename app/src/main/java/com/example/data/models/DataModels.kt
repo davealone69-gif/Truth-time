@@ -3,8 +3,8 @@ package com.example.data.models
 import java.util.UUID
 
 enum class MessageSender {
-  USER,
-  AI
+    USER,
+    AI,
 }
 
 data class ChatMessage(
@@ -14,7 +14,7 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis(),
     val personaId: String,
     val imageUrl: String? = null,
-    val videoUrl: String? = null
+    val videoUrl: String? = null,
 )
 
 data class PersonaModel(
@@ -24,7 +24,7 @@ data class PersonaModel(
     val description: String,
     val styleVibe: String,
     val defaultGreeting: String,
-    val primaryColorHex: Long
+    val primaryColorHex: Long,
 )
 
 data class AvatarCustomizationState(
@@ -34,15 +34,15 @@ data class AvatarCustomizationState(
     val outfit: String = "Luxury Silk Gown",
     val accessory: String = "Diamond Choker",
     val skinTone: String = "Warm Porcelain",
-    val backgroundVibe: String = "Sunset Penthouse"
+    val backgroundVibe: String = "Sunset Penthouse",
 )
 
 enum class CameraMotion(val displayName: String) {
-  PAN("Pan Right"),
-  TILT("Tilt Up"),
-  ZOOM("Slow Zoom In"),
-  DOLLY("Dolly Tracking"),
-  STATIC("Cinematic Static")
+    PAN("Pan Right"),
+    TILT("Tilt Up"),
+    ZOOM("Slow Zoom In"),
+    DOLLY("Dolly Tracking"),
+    STATIC("Cinematic Static"),
 }
 
 data class VideoScene(
@@ -53,7 +53,7 @@ data class VideoScene(
     val cameraMotion: CameraMotion = CameraMotion.ZOOM,
     val currentPositionMs: Long = 0L,
     val isPlaying: Boolean = false,
-    val characterName: String = "Crazzers AI"
+    val characterName: String = "Crazzers AI",
 )
 
 data class SwarmHealthStatus(
@@ -61,5 +61,5 @@ data class SwarmHealthStatus(
     val selfHealed: Boolean = false,
     val healingLog: String = "All nodes operating nominal",
     val activeAgents: List<String> =
-        listOf("AGENT_CHAT", "AGENT_PHOTO", "AGENT_VIDEO", "AGENT_AVATAR", "AGENT_MEMORY")
+        listOf("AGENT_CHAT", "AGENT_PHOTO", "AGENT_VIDEO", "AGENT_AVATAR", "AGENT_MEMORY"),
 )

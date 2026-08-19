@@ -1,0 +1,1 @@
+sed -i 's/URL("https:\/\/generativelanguage.googleapis.com\/v1beta\/models\/gemini-2.5-flash-image:generateContent?key=\$API_KEY")/URL(\n                        "https:\/\/generativelanguage.googleapis.com\/v1beta\/models\/gemini-2.5-flash-image:generateContent?key=\$API_KEY"\n                    )/' app/src/main/java/com/example/data/GeminiNativeClient.kt

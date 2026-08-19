@@ -8,3 +8,4 @@ KEYSTORE_PATH=debug.keystore
 KEYSTORE_PASSWORD=android
 KEY_ALIAS=androiddebugkey
 KEY_PASSWORD=android
+GEMINI_API_KEY=

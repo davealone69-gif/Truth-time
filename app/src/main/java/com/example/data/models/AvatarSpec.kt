@@ -12,5 +12,5 @@ data class AvatarSpec(
     val hairStyle: String = "Long Cascading Waves",
     val currentOutfit: String = "Lingerie",
     val isNudeEnabled: Boolean = false,
-    val backgroundVibe: String = "Luxury Penthouse Suite"
+    val backgroundVibe: String = "Luxury Penthouse Suite",
 )

@@ -12,5 +12,5 @@ data class LocalAvatarEntity(
     val vibeSetting: String = "",
     val localPhotoPath: String? = null,
     val isUnconstrainedActive: Boolean = true,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
 )

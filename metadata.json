@@ -1,5 +1,5 @@
 {
-  "name": "Aura Studio",
+  "name": "Truth-time",
   "description": "AI Roleplay, Custom Female Avatar Creator & Video Content Maker",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

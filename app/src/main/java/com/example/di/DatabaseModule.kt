@@ -13,16 +13,17 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+    @Provides
+    @Singleton
+    fun provideLocalAvatarDatabase(
+        @ApplicationContext context: Context,
+    ): LocalAvatarDatabase {
+        return LocalAvatarDatabase.getDatabase(context)
+    }
 
-  @Provides
-  @Singleton
-  fun provideLocalAvatarDatabase(@ApplicationContext context: Context): LocalAvatarDatabase {
-    return LocalAvatarDatabase.getDatabase(context)
-  }
-
-  @Provides
-  @Singleton
-  fun provideLocalAvatarDao(database: LocalAvatarDatabase): LocalAvatarDao {
-    return database.localAvatarDao()
-  }
+    @Provides
+    @Singleton
+    fun provideLocalAvatarDao(database: LocalAvatarDatabase): LocalAvatarDao {
+        return database.localAvatarDao()
+    }
 }

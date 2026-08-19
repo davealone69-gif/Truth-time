@@ -8,19 +8,18 @@ import com.example.data.repository.LocalStudioRepository
 import javax.inject.Inject
 
 class LocalSwarmSyncWorkerFactory
-@Inject
-constructor(private val repository: LocalStudioRepository) : WorkerFactory() {
-
-  override fun createWorker(
-      appContext: Context,
-      workerClassName: String,
-      workerParameters: WorkerParameters
-  ): ListenableWorker? {
-    return when (workerClassName) {
-      LocalSwarmSyncWorker::class.java.name -> {
-        LocalSwarmSyncWorker(appContext, workerParameters, repository)
-      }
-      else -> null
+    @Inject
+    constructor(private val repository: LocalStudioRepository) : WorkerFactory() {
+        override fun createWorker(
+            appContext: Context,
+            workerClassName: String,
+            workerParameters: WorkerParameters,
+        ): ListenableWorker? {
+            return when (workerClassName) {
+                LocalSwarmSyncWorker::class.java.name -> {
+                    LocalSwarmSyncWorker(appContext, workerParameters, repository)
+                }
+                else -> null
+            }
+        }
     }
-  }
-}
