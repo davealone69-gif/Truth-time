@@ -19,9 +19,8 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
-  // IMPORTANT: Do NOT customize the "debug" signingConfig.
-  // AGP ships a working default that uses ~/.android/debug.keystore
-  // (auto-created). Any storeFile pointing at a missing path breaks CI.
+  // CRITICAL: Never customize signingConfigs.debug or set storeFile on it.
+  // AGP default debug signing uses ~/.android/debug.keystore (auto-created).
   signingConfigs {
     create("release") {
       val keyPath =
@@ -29,7 +28,7 @@ android {
               ?: (project.findProperty("KEYSTORE_PATH") as String?)
       if (!keyPath.isNullOrBlank()) {
         val keystoreFile = rootProject.file(keyPath)
-        if (keystoreFile.exists()) {
+        if (keystoreFile.isFile) {
           storeFile = keystoreFile
           storePassword =
               System.getenv("KEYSTORE_PASSWORD")
@@ -46,10 +45,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") {
-      // Leave signingConfig unset → AGP default debug keystore
-      signingConfig = null
-    }
+    // debug: do not touch signingConfig — AGP assigns the default debug keystore
     getByName("release") {
       isMinifyEnabled = true
       isShrinkResources = true
@@ -57,9 +53,8 @@ android {
           getDefaultProguardFile("proguard-android-optimize.txt"),
           "proguard-rules.pro",
       )
-      // Only attach release signing when a real keystore was configured
       val releaseCfg = signingConfigs.findByName("release")
-      if (releaseCfg?.storeFile != null && releaseCfg.storeFile!!.exists()) {
+      if (releaseCfg?.storeFile != null && releaseCfg.storeFile!!.isFile) {
         signingConfig = releaseCfg
       }
     }
