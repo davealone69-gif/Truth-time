@@ -9,12 +9,12 @@ android {
   lint { abortOnError = false }
   namespace = "com.example"
   compileSdk = 35
-  
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
-  
+
   kotlinOptions { jvmTarget = "17" }
 
   defaultConfig {
@@ -27,6 +27,8 @@ android {
   }
 
   signingConfigs {
+    // Optional custom debug keystore (root or app/). If absent, AGP uses the default
+    // ~/.android/debug.keystore which is auto-created and works in CI.
     val rootKeystore = rootProject.file("debug.keystore")
     val appKeystore = file("debug.keystore")
     val activeKeystore =
@@ -35,6 +37,7 @@ android {
           appKeystore.exists() -> appKeystore
           else -> null
         }
+
     if (activeKeystore != null) {
       getByName("debug") {
         storeFile = activeKeystore
@@ -42,44 +45,27 @@ android {
         keyAlias = "androiddebugkey"
         keyPassword = "android"
       }
-      create("debugConfig") {
-        storeFile = activeKeystore
-        storePassword = "android"
-        keyAlias = "androiddebugkey"
-        keyPassword = "android"
-      }
     }
+    // else: leave the default "debug" signing config alone (AGP default keystore)
 
     create("release") {
-      val keyPath = System.getenv("KEYSTORE_PATH") ?: project.findProperty("KEYSTORE_PATH") as String?
+      val keyPath =
+          System.getenv("KEYSTORE_PATH")
+              ?: project.findProperty("KEYSTORE_PATH") as String?
       if (keyPath != null) {
         storeFile = rootProject.file(keyPath)
-        storePassword = System.getenv("KEYSTORE_PASSWORD") ?: project.findProperty("KEYSTORE_PASSWORD") as String?
-        keyAlias = System.getenv("KEY_ALIAS") ?: project.findProperty("KEY_ALIAS") as String?
-        keyPassword = System.getenv("KEY_PASSWORD") ?: project.findProperty("KEY_PASSWORD") as String?
-      } else {
-        val rootKeystore = rootProject.file("debug.keystore")
-        val appKeystore = file("debug.keystore")
-        val activeKeystore = when {
-          rootKeystore.exists() -> rootKeystore
-          appKeystore.exists() -> appKeystore
-          else -> null
-        }
-        if (activeKeystore != null) {
-          storeFile = activeKeystore
-          storePassword = "android"
-          keyAlias = "androiddebugkey"
-          keyPassword = "android"
-        }
+        storePassword =
+            System.getenv("KEYSTORE_PASSWORD")
+                ?: project.findProperty("KEYSTORE_PASSWORD") as String?
+        keyAlias =
+            System.getenv("KEY_ALIAS")
+                ?: project.findProperty("KEY_ALIAS") as String?
+        keyPassword =
+            System.getenv("KEY_PASSWORD")
+                ?: project.findProperty("KEY_PASSWORD") as String?
       }
-    }
-    
-    // Explicitly configure debug signing to avoid checkDebugAarMetadata issues
-    getByName("debug") {
-      storeFile = rootProject.file("app/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+      // If no release keystore is configured, release builds will fail at signing time
+      // (intentional — never fall back to debug keystore for release).
     }
   }
 
@@ -87,22 +73,18 @@ android {
     release {
       isMinifyEnabled = true
       isShrinkResources = true
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+          getDefaultProguardFile("proguard-android-optimize.txt"),
+          "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
-      val debugConfig = signingConfigs.findByName("debugConfig")
-      if (debugConfig?.storeFile != null) {
-        signingConfig = debugConfig
-      }
+      // Uses the default debug signing config (or the custom one if a keystore was found).
+      // Do not force a non-existent storeFile.
     }
   }
 
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-  }
-  kotlinOptions { jvmTarget = "17" }
   buildFeatures {
     compose = true
     buildConfig = true
@@ -116,7 +98,6 @@ dependencies {
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
-
 
   implementation(libs.androidx.ui)
   implementation(libs.androidx.ui.graphics)
@@ -133,16 +114,6 @@ dependencies {
   implementation("androidx.room:room-runtime:2.6.1")
   ksp("androidx.room:room-compiler:2.6.1")
   implementation("androidx.work:work-runtime-ktx:2.10.0")
-
-
-
-
-
-  
-
-  // Hilt / Dagger are missing from toml, using raw for what's already there if needed,
-  // but the original cat showed it wasn't there? Wait, the previous cat showed it didn't have Hilt.
-  // The codebase has Hilt though! Let's check if the build fails, if so I'll add them.
 
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
