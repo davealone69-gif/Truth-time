@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -30,11 +29,7 @@ enum class NavigationTab(val route: String, val title: String, val icon: android
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MobileTopBar(
-    currentRoute: String,
-    onNavigate: (String) -> Unit,
-    onSettings: () -> Unit,
-) {
+private fun MobileTopBar(currentRoute: String, onNavigate: (String) -> Unit, onSettings: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val current = NavigationTab.values().firstOrNull { it.route == currentRoute } ?: NavigationTab.CHAT
     TopAppBar(
@@ -45,18 +40,10 @@ private fun MobileTopBar(
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.Menu, contentDescription = "Main menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     NavigationTab.values().forEach { tab ->
-                        DropdownMenuItem(
-                            text = { Text(tab.title) },
-                            leadingIcon = { Icon(tab.icon, contentDescription = null) },
-                            onClick = { expanded = false; onNavigate(tab.route) },
-                        )
+                        DropdownMenuItem(text = { Text(tab.title) }, leadingIcon = { Icon(tab.icon, null) }, onClick = { expanded = false; onNavigate(tab.route) })
                     }
                     HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text("Settings") },
-                        leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                        onClick = { expanded = false; onSettings() },
-                    )
+                    DropdownMenuItem(text = { Text("Settings") }, leadingIcon = { Icon(Icons.Default.Settings, null) }, onClick = { expanded = false; onSettings() })
                 }
             }
         },
@@ -83,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         Surface(shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                             Column(Modifier.padding(20.dp)) {
                                 Text("AI Provider", style = MaterialTheme.typography.headlineSmall)
-                                Text("Gemini is optional. The app can use the copied OpenAI-compatible LLM layer when configured.", style = MaterialTheme.typography.bodySmall)
+                                Text("Gemini is optional. The OpenAI-compatible LLM layer is available for provider-agnostic swarm work.", style = MaterialTheme.typography.bodySmall)
                                 Spacer(Modifier.height(16.dp))
                                 OutlinedTextField(value = key, onValueChange = { key = it }, label = { Text("Gemini API Key") }, modifier = Modifier.fillMaxWidth())
                                 Spacer(Modifier.height(16.dp))
@@ -96,12 +83,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Scaffold(
-                    topBar = { MobileTopBar(route, { target -> navController.navigate(target) { launchSingleTop = true; restoreState = true } }, { showSettings = true }) },
-                ) { padding ->
+                Scaffold(topBar = { MobileTopBar(route, { target -> navController.navigate(target) { launchSingleTop = true; restoreState = true } }, { showSettings = true }) }) { padding ->
                     NavHost(navController, NavigationTab.CHAT.route, Modifier.padding(padding)) {
                         composable(NavigationTab.CHAT.route) { RoleplayChatScreen(viewModel, { navController.navigate(NavigationTab.PERSONAS.route) }) }
-                        composable(NavigationTab.AVATAR.route) { AvatarCreatorScreen(viewModel) }
+                        composable(NavigationTab.AVATAR.route) { AvatarCreatorScreen(viewModel) { navController.navigate(NavigationTab.VIDEO.route) } }
                         composable(NavigationTab.VIDEO.route) { VideoMakerScreen(viewModel) }
                         composable(NavigationTab.PERSONAS.route) { PersonasScreen(viewModel) { navController.navigate(NavigationTab.CHAT.route) } }
                     }
