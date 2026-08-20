@@ -19,3 +19,4 @@ secrets/
 mapping.txt
 app/build/
 libs/build/
+buildSrc/build/
