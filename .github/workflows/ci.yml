@@ -12,6 +12,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,6 +37,21 @@ jobs:
 
       - name: Grant execute permission to Gradle
         run: chmod +x ./gradlew
+
+      - name: Format Kotlin sources
+        run: ./gradlew ktlintFormat
+
+      - name: Commit formatting fixes
+        run: |
+          if git diff --quiet; then
+            echo "Kotlin sources already formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '*.kt'
+          git commit -m "style: apply ktlint formatting"
+          git push
 
       - name: Check Static Analysis (Detekt & Ktlint)
         run: ./gradlew detekt ktlintCheck
