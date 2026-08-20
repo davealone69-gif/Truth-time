@@ -1,6 +1,5 @@
 package com.example
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,85 +57,40 @@ fun CyberpunkSideMenu(
     onSettingsClick: () -> Unit,
 ) {
     Column(
-        modifier =
-            Modifier
-                .fillMaxHeight()
-                .width(96.dp)
-                .background(DarkCanvas)
-                .padding(vertical = 16.dp),
+        modifier = Modifier.fillMaxHeight().width(96.dp).background(DarkCanvas).padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Logo Placeholder
-        Box(
-            modifier =
-                Modifier
-                    .size(48.dp)
-                    .padding(bottom = 16.dp),
-            contentAlignment = Alignment.Center,
-        ) {
+        Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
             Text("M", color = PurpleAccent, fontSize = 32.sp, fontWeight = FontWeight.Bold)
         }
-
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Navigation Items
         NavigationTab.values().forEach { tab ->
             val selected = currentRoute == tab.route
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onNavigate(tab.route) },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onNavigate(tab.route) },
                 contentAlignment = Alignment.CenterStart,
             ) {
-                // Background and left border for selected item
                 if (selected) {
                     Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .matchParentSize()
-                                .padding(end = 8.dp)
-                                .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-                                .background(Color(0xFF1B1A26)),
+                        modifier = Modifier.fillMaxWidth().matchParentSize().padding(end = 8.dp)
+                            .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                            .background(Color(0xFF1B1A26)),
                     )
-                    Box(
-                        modifier =
-                            Modifier
-                                .width(4.dp)
-                                .matchParentSize()
-                                .background(PurpleAccent),
-                    )
+                    Box(modifier = Modifier.width(4.dp).matchParentSize().background(PurpleAccent))
                 }
-
                 Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Icon(
-                        imageVector = tab.icon,
-                        contentDescription = tab.title,
-                        tint = if (selected) TextPrimary else TextSecondary,
-                        modifier = Modifier.size(28.dp),
-                    )
+                    Icon(tab.icon, contentDescription = tab.title, tint = if (selected) TextPrimary else TextSecondary, modifier = Modifier.size(28.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = tab.title,
-                        color = if (selected) TextPrimary else TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    )
+                    Text(tab.title, color = if (selected) TextPrimary else TextSecondary, fontSize = 10.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
                 }
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        // Settings / Bottom Icon
         IconButton(onClick = onSettingsClick) {
             Icon(Icons.Default.Settings, contentDescription = "Settings", tint = TextSecondary)
         }
@@ -150,55 +104,49 @@ class MainActivity : ComponentActivity() {
         setContent {
             AuraStudioTheme {
                 val auraViewModel: AuraViewModel = viewModel()
+                val apiKey by auraViewModel.apiKey.collectAsState()
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: NavigationTab.CHAT.route
                 var showSettings by remember { mutableStateOf(false) }
-                val sharedPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
-                LaunchedEffect(Unit) {
-                    GeminiNativeClient.API_KEY = sharedPrefs.getString("gemini_api_key", "") ?: ""
+                LaunchedEffect(apiKey) {
+                    GeminiNativeClient.API_KEY = apiKey
                 }
 
                 if (showSettings) {
-                    var tempKey by remember { mutableStateOf(GeminiNativeClient.API_KEY) }
+                    var tempKey by remember(apiKey) { mutableStateOf(apiKey) }
                     Dialog(onDismissRequest = { showSettings = false }) {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surface,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
+                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("Settings", style = MaterialTheme.typography.titleLarge)
                                 Spacer(modifier = Modifier.height(16.dp))
                                 OutlinedTextField(
                                     value = tempKey,
                                     onValueChange = { tempKey = it },
                                     label = { Text("Gemini API Key") },
+                                    singleLine = true,
                                     modifier = Modifier.fillMaxWidth(),
                                 )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = if (tempKey.isBlank()) "Local mode: chat, avatar preview and studio remain usable without a key." else "Gemini live mode enabled.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Row(
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    TextButton(onClick = { showSettings = false }) {
-                                        Text("Cancel")
-                                    }
+                                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                                    TextButton(onClick = { showSettings = false }) { Text("Cancel") }
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Button(onClick = {
+                                        auraViewModel.setApiKey(tempKey)
                                         GeminiNativeClient.API_KEY = tempKey
-                                        sharedPrefs.edit().putString("gemini_api_key", tempKey).apply()
                                         showSettings = false
-                                    }) {
-                                        Text("Save")
-                                    }
+                                    }) { Text("Save") }
                                 }
                             }
                         }
@@ -207,7 +155,6 @@ class MainActivity : ComponentActivity() {
 
                 Surface(color = DarkCanvas, modifier = Modifier.fillMaxSize()) {
                     Row(modifier = Modifier.fillMaxSize()) {
-                        // Side Navigation Menu
                         CyberpunkSideMenu(
                             currentRoute = currentRoute,
                             onNavigate = { route ->
@@ -222,15 +169,8 @@ class MainActivity : ComponentActivity() {
                             onSettingsClick = { showSettings = true },
                         )
 
-                        Divider(
-                            modifier =
-                                Modifier
-                                    .fillMaxHeight()
-                                    .width(1.dp),
-                            color = MaterialTheme.colorScheme.outline,
-                        )
+                        VerticalDivider()
 
-                        // Main Content
                         Scaffold(
                             modifier = Modifier.weight(1f),
                             containerColor = MaterialTheme.colorScheme.background,
@@ -243,17 +183,11 @@ class MainActivity : ComponentActivity() {
                                 composable(NavigationTab.CHAT.route) {
                                     RoleplayChatScreen(
                                         viewModel = auraViewModel,
-                                        onNavigateToPersonas = {
-                                            navController.navigate(NavigationTab.PERSONAS.route)
-                                        },
+                                        onNavigateToPersonas = { navController.navigate(NavigationTab.PERSONAS.route) },
                                     )
                                 }
-                                composable(NavigationTab.AVATAR.route) {
-                                    AvatarCreatorScreen(viewModel = auraViewModel)
-                                }
-                                composable(NavigationTab.VIDEO.route) {
-                                    VideoMakerScreen(viewModel = auraViewModel)
-                                }
+                                composable(NavigationTab.AVATAR.route) { AvatarCreatorScreen(viewModel = auraViewModel) }
+                                composable(NavigationTab.VIDEO.route) { VideoMakerScreen(viewModel = auraViewModel) }
                                 composable(NavigationTab.PERSONAS.route) {
                                     PersonasScreen(
                                         viewModel = auraViewModel,
