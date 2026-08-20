@@ -1,6 +1,5 @@
 package com.example.ui.screens
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,7 +30,11 @@ private val BgDeep = Color(0xFF0B0B10)
 private val PanelDark = Color(0xFF12121A)
 
 @Composable
-fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier) {
+fun AvatarCreatorScreen(
+    viewModel: AuraViewModel,
+    onNavigateToVideo: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     val spec by viewModel.advancedAvatarSpec.collectAsState()
     val image by viewModel.generatedImage.collectAsState()
     val generating by viewModel.isGenerating.collectAsState()
@@ -46,7 +49,6 @@ fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier)
             Text("AVATAR DESIGN", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text("CREATE YOUR IDENTITY", color = AccentPurple, fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
-
         item {
             Card(shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = PanelDark)) {
                 Box(Modifier.fillMaxWidth().aspectRatio(0.82f), contentAlignment = Alignment.Center) {
@@ -67,11 +69,7 @@ fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier)
                 }
             }
         }
-
-        item {
-            GenerationRequirements(apiConfigured = apiKey.isNotBlank())
-        }
-
+        item { GenerationRequirements(apiConfigured = apiKey.isNotBlank()) }
         item {
             SectionCard("Identity") {
                 SpecText("Name", spec.name)
@@ -79,7 +77,6 @@ fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier)
                 SpecText("Style", spec.race)
             }
         }
-
         item {
             SectionCard("Appearance") {
                 SpecText("Hair", "${spec.hairStyle} • ${spec.hairColor}")
@@ -89,7 +86,6 @@ fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier)
                 SpecText("Expression", spec.expressionVibe)
             }
         }
-
         item {
             SectionCard("Scene") {
                 SpecText("Outfit", spec.currentOutfit)
@@ -104,7 +100,6 @@ fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier)
                 )
             }
         }
-
         item {
             Button(
                 onClick = { viewModel.generateAvatar() },
@@ -117,16 +112,15 @@ fun AvatarCreatorScreen(viewModel: AuraViewModel, modifier: Modifier = Modifier)
                 Text(if (generating) "GENERATING…" else "GENERATE AVATAR")
             }
         }
-
         item {
             OutlinedButton(
-                onClick = { /* Navigation is provided by the main menu. */ },
-                modifier = Modifier.fillMaxWidth(),
+                onClick = onNavigateToVideo,
                 enabled = image != null,
+                modifier = Modifier.fillMaxWidth().testTag("avatar_to_video_button"),
             ) {
                 Icon(Icons.Default.Videocam, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("AVATAR READY FOR VIDEO MAKER")
+                Text("OPEN VIDEO MAKER")
             }
         }
     }
@@ -143,10 +137,10 @@ private fun GenerationRequirements(apiConfigured: Boolean) {
             }
             Spacer(Modifier.height(8.dp))
             Requirement("Avatar specification", true)
-            Requirement("Image-generation provider/API", apiConfigured)
+            Requirement("Configured image-generation provider", apiConfigured)
             Requirement("Internet access for cloud generation", apiConfigured)
             Text(
-                "The avatar designer itself is local and the specification is persisted. Actual image generation currently uses the app's configured image provider; the copied OpenAI-compatible LLM layer is available for future/local-provider wiring.",
+                "The designer and avatar specification are local and persisted. Actual image generation currently uses the configured image provider. The copied OpenAI-compatible LLM layer is available for provider-agnostic swarm/LLM work.",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.LightGray,
             )
@@ -166,11 +160,11 @@ private fun Requirement(label: String, ready: Boolean) {
 @Composable
 private fun SectionCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = PanelDark)) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), content = {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text(title.uppercase(), color = AccentPurple, fontWeight = FontWeight.Bold, fontSize = 11.sp)
             Spacer(Modifier.height(8.dp))
             content()
-        })
+        }
     }
 }
 
