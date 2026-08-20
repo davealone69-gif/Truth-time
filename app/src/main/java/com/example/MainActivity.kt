@@ -5,142 +5,62 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import com.example.data.GeminiNativeClient
-import com.example.ui.screens.AvatarCreatorScreen
-import com.example.ui.screens.PersonasScreen
-import com.example.ui.screens.RoleplayChatScreen
-import com.example.ui.screens.VideoMakerScreen
+import com.example.ui.screens.*
 import com.example.ui.theme.AuraStudioTheme
-import com.example.ui.theme.DarkCanvas
-import com.example.ui.theme.PurpleAccent
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
 import com.example.viewmodel.AuraViewModel
 
-enum class NavigationTab(
-    val route: String,
-    val title: String,
-    val icon: ImageVector,
-    val testTag: String,
-) {
-    CHAT("chat", "CHAT", Icons.Default.Chat, "nav_tab_chat"),
-    AVATAR("avatar", "APPEARANCE", Icons.Default.Face, "nav_tab_avatar"),
-    VIDEO("video", "STUDIO", Icons.Default.Videocam, "nav_tab_video"),
-    PERSONAS("personas", "PERSONAS", Icons.Default.Psychology, "nav_tab_personas"),
+enum class NavigationTab(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector, val testTag: String) {
+    CHAT("chat", "Chat", Icons.Default.Chat, "nav_tab_chat"),
+    AVATAR("avatar", "Avatar", Icons.Default.Face, "nav_tab_avatar"),
+    VIDEO("video", "Video Maker", Icons.Default.Videocam, "nav_tab_video"),
+    PERSONAS("personas", "Swarm & Personas", Icons.Default.Psychology, "nav_tab_personas"),
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CyberpunkSideMenu(
+private fun MobileTopBar(
     currentRoute: String,
     onNavigate: (String) -> Unit,
-    onSettingsClick: () -> Unit,
+    onSettings: () -> Unit,
 ) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxHeight()
-                .width(96.dp)
-                .background(DarkCanvas)
-                .padding(vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        // Logo Placeholder
-        Box(
-            modifier =
-                Modifier
-                    .size(48.dp)
-                    .padding(bottom = 16.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("M", color = PurpleAccent, fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Navigation Items
-        NavigationTab.values().forEach { tab ->
-            val selected = currentRoute == tab.route
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onNavigate(tab.route) },
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                // Background and left border for selected item
-                if (selected) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .matchParentSize()
-                                .padding(end = 8.dp)
-                                .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-                                .background(Color(0xFF1B1A26)),
-                    )
-                    Box(
-                        modifier =
-                            Modifier
-                                .width(4.dp)
-                                .matchParentSize()
-                                .background(PurpleAccent),
-                    )
-                }
-
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = tab.icon,
-                        contentDescription = tab.title,
-                        tint = if (selected) TextPrimary else TextSecondary,
-                        modifier = Modifier.size(28.dp),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = tab.title,
-                        color = if (selected) TextPrimary else TextSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+    var expanded by remember { mutableStateOf(false) }
+    val current = NavigationTab.values().firstOrNull { it.route == currentRoute } ?: NavigationTab.CHAT
+    TopAppBar(
+        title = { Text(current.title) },
+        navigationIcon = { Icon(current.icon, contentDescription = current.title, modifier = Modifier.padding(start = 12.dp)) },
+        actions = {
+            Box {
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.Menu, contentDescription = "Main menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    NavigationTab.values().forEach { tab ->
+                        DropdownMenuItem(
+                            text = { Text(tab.title) },
+                            leadingIcon = { Icon(tab.icon, contentDescription = null) },
+                            onClick = { expanded = false; onNavigate(tab.route) },
+                        )
+                    }
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("Settings") },
+                        leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                        onClick = { expanded = false; onSettings() },
                     )
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Settings / Bottom Icon
-        IconButton(onClick = onSettingsClick) {
-            Icon(Icons.Default.Settings, contentDescription = "Settings", tint = TextSecondary)
-        }
-    }
+        },
+    )
 }
 
 class MainActivity : ComponentActivity() {
@@ -149,123 +69,41 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AuraStudioTheme {
-                val auraViewModel: AuraViewModel = viewModel()
+                val viewModel: AuraViewModel = viewModel()
                 val navController = rememberNavController()
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route ?: NavigationTab.CHAT.route
+                val entry by navController.currentBackStackEntryAsState()
+                val route = entry?.destination?.route ?: NavigationTab.CHAT.route
                 var showSettings by remember { mutableStateOf(false) }
-                val sharedPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-
-                LaunchedEffect(Unit) {
-                    GeminiNativeClient.API_KEY = sharedPrefs.getString("gemini_api_key", "") ?: ""
-                }
+                val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                LaunchedEffect(Unit) { GeminiNativeClient.API_KEY = prefs.getString("gemini_api_key", "") ?: "" }
 
                 if (showSettings) {
-                    var tempKey by remember { mutableStateOf(GeminiNativeClient.API_KEY) }
+                    var key by remember { mutableStateOf(GeminiNativeClient.API_KEY) }
                     Dialog(onDismissRequest = { showSettings = false }) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surface,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Text("Settings", style = MaterialTheme.typography.titleLarge)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                OutlinedTextField(
-                                    value = tempKey,
-                                    onValueChange = { tempKey = it },
-                                    label = { Text("Gemini API Key") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Row(
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    TextButton(onClick = { showSettings = false }) {
-                                        Text("Cancel")
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Button(onClick = {
-                                        GeminiNativeClient.API_KEY = tempKey
-                                        sharedPrefs.edit().putString("gemini_api_key", tempKey).apply()
-                                        showSettings = false
-                                    }) {
-                                        Text("Save")
-                                    }
+                        Surface(shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Column(Modifier.padding(20.dp)) {
+                                Text("AI Provider", style = MaterialTheme.typography.headlineSmall)
+                                Text("Gemini is optional. The app can use the copied OpenAI-compatible LLM layer when configured.", style = MaterialTheme.typography.bodySmall)
+                                Spacer(Modifier.height(16.dp))
+                                OutlinedTextField(value = key, onValueChange = { key = it }, label = { Text("Gemini API Key") }, modifier = Modifier.fillMaxWidth())
+                                Spacer(Modifier.height(16.dp))
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    TextButton(onClick = { showSettings = false }) { Text("Cancel") }
+                                    Button(onClick = { GeminiNativeClient.API_KEY = key; prefs.edit().putString("gemini_api_key", key).apply(); showSettings = false }) { Text("Save") }
                                 }
                             }
                         }
                     }
                 }
 
-                Surface(color = DarkCanvas, modifier = Modifier.fillMaxSize()) {
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        // Side Navigation Menu
-                        CyberpunkSideMenu(
-                            currentRoute = currentRoute,
-                            onNavigate = { route ->
-                                if (currentRoute != route) {
-                                    navController.navigate(route) {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            },
-                            onSettingsClick = { showSettings = true },
-                        )
-
-                        Divider(
-                            modifier =
-                                Modifier
-                                    .fillMaxHeight()
-                                    .width(1.dp),
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-
-                        // Main Content
-                        Scaffold(
-                            modifier = Modifier.weight(1f),
-                            containerColor = MaterialTheme.colorScheme.background,
-                        ) { innerPadding ->
-                            NavHost(
-                                navController = navController,
-                                startDestination = NavigationTab.CHAT.route,
-                                modifier = Modifier.padding(innerPadding),
-                            ) {
-                                composable(NavigationTab.CHAT.route) {
-                                    RoleplayChatScreen(
-                                        viewModel = auraViewModel,
-                                        onNavigateToPersonas = {
-                                            navController.navigate(NavigationTab.PERSONAS.route)
-                                        },
-                                    )
-                                }
-                                composable(NavigationTab.AVATAR.route) {
-                                    AvatarCreatorScreen(viewModel = auraViewModel)
-                                }
-                                composable(NavigationTab.VIDEO.route) {
-                                    VideoMakerScreen(viewModel = auraViewModel)
-                                }
-                                composable(NavigationTab.PERSONAS.route) {
-                                    PersonasScreen(
-                                        viewModel = auraViewModel,
-                                        onSelectAndStartChat = {
-                                            navController.navigate(NavigationTab.CHAT.route) {
-                                                popUpTo(NavigationTab.CHAT.route) { inclusive = true }
-                                            }
-                                        },
-                                    )
-                                }
-                            }
-                        }
+                Scaffold(
+                    topBar = { MobileTopBar(route, { target -> navController.navigate(target) { launchSingleTop = true; restoreState = true } }, { showSettings = true }) },
+                ) { padding ->
+                    NavHost(navController, NavigationTab.CHAT.route, Modifier.padding(padding)) {
+                        composable(NavigationTab.CHAT.route) { RoleplayChatScreen(viewModel, { navController.navigate(NavigationTab.PERSONAS.route) }) }
+                        composable(NavigationTab.AVATAR.route) { AvatarCreatorScreen(viewModel) }
+                        composable(NavigationTab.VIDEO.route) { VideoMakerScreen(viewModel) }
+                        composable(NavigationTab.PERSONAS.route) { PersonasScreen(viewModel) { navController.navigate(NavigationTab.CHAT.route) } }
                     }
                 }
             }
