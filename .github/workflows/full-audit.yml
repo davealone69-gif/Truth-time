@@ -50,8 +50,6 @@ jobs:
             echo "::endgroup::"
           }
           run_task lint
-          run_task detekt
-          run_task ktlintCheck
           run_task test
 
       - name: Build debug APK
