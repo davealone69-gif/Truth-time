@@ -98,13 +98,13 @@ object GeminiNativeClient {
                 ?: return@withContext null
 
             var finished: JSONObject? = null
-            repeat(36) {
+            for (attempt in 0 until 36) {
                 delay(10_000)
                 val poll = openConnection("$BASE_URL/$operationName", 30_000)
                 val response = getJson(poll, key)
                 if (poll.responseCode in 200..299 && response.optBoolean("done", false)) {
                     finished = response
-                    return@repeat
+                    break
                 }
             }
             val result = finished ?: return@withContext null
