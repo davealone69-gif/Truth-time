@@ -40,9 +40,9 @@ Release build (verified):
 ```
 
 ### Static Analysis
-Linting is fully enabled via detekt and ktlint (verified):
+Use Android Gradle Plugin lint:
 ```bash
-./gradlew detekt ktlintCheck
+./gradlew lint
 ```
 
 ### Tests
@@ -59,7 +59,7 @@ The CI will:
 - Check out the repository.
 - Validate the Gradle Wrapper (using `gradle/actions/wrapper-validation@v6`).
 - Set up JDK 17 and Gradle.
-- Run Detekt and Ktlint.
+- Run Android Lint.
 - Run unit tests.
 - Build Debug APK.
 - Build Release APK and AAB (for tagged releases) using GitHub Actions secrets.
