@@ -67,7 +67,7 @@ class LocalStudioViewModelTest {
             )
             testDispatcher.scheduler.advanceUntilIdle()
 
-            val avatars = repository.getAllAvatars().first()
+            val avatars = repository.getAllAvatars().first { it.isNotEmpty() }
             assertTrue("Avatars list should not be empty", avatars.isNotEmpty())
             assertEquals("Test Model", avatars.first().modelName)
             assertEquals("123", avatars.first().modelId)

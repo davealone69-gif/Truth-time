@@ -3,9 +3,6 @@ package com.example.data
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Typeface
 import android.util.Base64
 import android.util.Log
 import com.example.BuildConfig
@@ -34,7 +31,7 @@ object GeminiNativeClient {
     suspend fun generateText(prompt: String, systemInstruction: String? = null): String =
         withContext(Dispatchers.IO) {
             val key = API_KEY
-            if (key.isBlank()) return@withContext localTextFallback(prompt)
+            if (key.isBlank()) return@withContext "Please configure your Gemini API Key in the settings."
             try {
                 val connection = openConnection("$BASE_URL/models/$TEXT_MODEL:generateContent")
                 val request = JSONObject().apply {
@@ -56,9 +53,9 @@ object GeminiNativeClient {
             localTextFallback(prompt)
         }
 
-    suspend fun generateImage(prompt: String): Bitmap = withContext(Dispatchers.IO) {
+    suspend fun generateImage(prompt: String): Bitmap? = withContext(Dispatchers.IO) {
         val key = API_KEY
-        if (key.isBlank()) return@withContext createLocalImage(prompt)
+        if (key.isBlank()) return@withContext null
         try {
             val connection = openConnection("$BASE_URL/models/$IMAGE_MODEL:generateContent", 60_000)
             val request = JSONObject().apply {
@@ -80,13 +77,13 @@ object GeminiNativeClient {
             }
             Log.e("GeminiNativeClient", "Image API ${connection.responseCode}")
         } catch (error: Exception) { Log.e("GeminiNativeClient", "Image generation failed", error) }
-        createLocalImage(prompt)
+        null
     }
 
-    suspend fun generateVideo(prompt: String): String = withContext(Dispatchers.IO) {
+    suspend fun generateVideo(prompt: String): String? = withContext(Dispatchers.IO) {
         val key = API_KEY
-        if (key.isBlank()) return@withContext "local-preview://${System.currentTimeMillis()}"
-        val context = appContext ?: return@withContext "local-preview://${System.currentTimeMillis()}"
+        if (key.isBlank()) return@withContext null
+        val context = appContext ?: return@withContext null
         try {
             val start = openConnection("$BASE_URL/models/$VIDEO_MODEL:predictLongRunning", 60_000)
             val request = JSONObject().apply {
@@ -96,30 +93,30 @@ object GeminiNativeClient {
                 })
             }
             val startResponse = postJson(start, request, key)
-            if (start.responseCode !in 200..299) return@withContext "local-preview://${System.currentTimeMillis()}"
+            if (start.responseCode !in 200..299) return@withContext null
             val operationName = startResponse.optString("name").takeIf { it.isNotBlank() }
-                ?: return@withContext "local-preview://${System.currentTimeMillis()}"
+                ?: return@withContext null
 
             var finished: JSONObject? = null
-            repeat(36) {
+            for (attempt in 0 until 36) {
                 delay(10_000)
                 val poll = openConnection("$BASE_URL/$operationName", 30_000)
                 val response = getJson(poll, key)
                 if (poll.responseCode in 200..299 && response.optBoolean("done", false)) {
                     finished = response
-                    return@repeat
+                    break
                 }
             }
-            val result = finished ?: return@withContext "local-preview://${System.currentTimeMillis()}"
-            if (result.optJSONObject("error") != null) return@withContext "local-preview://${System.currentTimeMillis()}"
+            val result = finished ?: return@withContext null
+            if (result.optJSONObject("error") != null) return@withContext null
             val uri = result.optJSONObject("response")?.optJSONObject("generateVideoResponse")
                 ?.optJSONArray("generatedSamples")?.optJSONObject(0)?.optJSONObject("video")?.optString("uri")
-                ?.takeIf { it.isNotBlank() } ?: return@withContext "local-preview://${System.currentTimeMillis()}"
+                ?.takeIf { it.isNotBlank() } ?: return@withContext null
             val output = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
             downloadBinary(uri, key, output)
             if (output.exists() && output.length() > 0) return@withContext output.absolutePath
         } catch (error: Exception) { Log.e("GeminiNativeClient", "Video generation failed", error) }
-        "local-preview://${System.currentTimeMillis()}"
+        null
     }
 
     private fun openConnection(url: String, timeoutMs: Int = 30_000) = (URL(url).openConnection() as HttpURLConnection).apply {
@@ -160,15 +157,4 @@ object GeminiNativeClient {
         else -> "Local companion response: I received your message. The app is operating offline."
     }
 
-    private fun createLocalImage(prompt: String): Bitmap {
-        val bitmap = Bitmap.createBitmap(768, 768, Bitmap.Config.ARGB_8888); val canvas = Canvas(bitmap); canvas.drawColor(0xFF15121F.toInt())
-        val glow = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF7C4DFF.toInt() }; canvas.drawCircle(384f, 330f, 190f, glow)
-        glow.color = 0xFFFF80AB.toInt(); canvas.drawCircle(384f, 340f, 135f, glow)
-        val head = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFFFE0BD.toInt() }; canvas.drawCircle(384f, 335f, 105f, head)
-        val hair = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF24202E.toInt() }; canvas.drawCircle(384f, 285f, 108f, hair); canvas.drawRect(276f, 285f, 492f, 345f, hair)
-        val eyes = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF00E5FF.toInt() }; canvas.drawCircle(350f, 335f, 10f, eyes); canvas.drawCircle(418f, 335f, 10f, eyes)
-        val text = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFFFFFFF.toInt(); textSize = 30f; typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER }
-        canvas.drawText("LOCAL PORTRAIT", 384f, 610f, text); text.textSize = 18f; text.typeface = Typeface.DEFAULT; canvas.drawText(prompt.take(55), 384f, 645f, text)
-        return bitmap
-    }
 }

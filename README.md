@@ -40,9 +40,9 @@ Release build (verified):
 ```
 
 ### Static Analysis
-Linting is fully enabled via detekt and ktlint (verified):
+Use Android Gradle Plugin lint:
 ```bash
-./gradlew detekt ktlintCheck
+./gradlew lint
 ```
 
 ### Tests
@@ -59,7 +59,7 @@ The CI will:
 - Check out the repository.
 - Validate the Gradle Wrapper (using `gradle/actions/wrapper-validation@v6`).
 - Set up JDK 17 and Gradle.
-- Run Detekt and Ktlint.
+- Run Android Lint.
 - Run unit tests.
 - Build Debug APK.
 - Build Release APK and AAB (for tagged releases) using GitHub Actions secrets.
@@ -72,4 +72,9 @@ The CI will:
 
 ## Known Limitations
 - Runtime verification on a real device or emulator was NOT VERIFIED due to the lack of an available emulator in the build environment.
-- CI/CD workflow was NOT EXECUTED since this environment does not run GitHub Actions.
+- GitHub Actions CI is executed by GitHub; a green CI run proves only the checks included in that run, not successful runtime use on a physical phone.
+
+
+## AI capability verification
+
+A configured provider or reachable endpoint is not proof of completed generation. Mark chat verified only after a non-empty model response, image generation only after a real decodable image, and video generation only after a real playable media asset is returned. Missing API keys must produce configuration guidance, not fabricated output or placeholder URLs. Local avatar preview does not imply that remote image/video generation works. Physical-device runtime remains a separate verification step.

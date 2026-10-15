@@ -101,10 +101,24 @@ class MainActivity : ComponentActivity() {
                         VerticalDivider()
                         Scaffold(Modifier.weight(1f), containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
                             NavHost(navController, NavigationTab.CHAT.route, Modifier.padding(innerPadding)) {
-                                composable(NavigationTab.CHAT.route) { RoleplayChatScreen(auraViewModel) { navController.navigate(NavigationTab.PERSONAS.route) } }
+                                composable(NavigationTab.CHAT.route) {
+                                    RoleplayChatScreen(
+                                        viewModel = auraViewModel,
+                                        onNavigateToPersonas = { navController.navigate(NavigationTab.PERSONAS.route) },
+                                    )
+                                }
                                 composable(NavigationTab.AVATAR.route) { AvatarCreatorScreen(auraViewModel) }
                                 composable(NavigationTab.VIDEO.route) { VideoMakerScreen(auraViewModel) }
-                                composable(NavigationTab.PERSONAS.route) { PersonasScreen(auraViewModel) { navController.navigate(NavigationTab.CHAT.route) { popUpTo(NavigationTab.CHAT.route) { inclusive = true } } } }
+                                composable(NavigationTab.PERSONAS.route) {
+                                    PersonasScreen(
+                                        viewModel = auraViewModel,
+                                        onSelectAndStartChat = {
+                                            navController.navigate(NavigationTab.CHAT.route) {
+                                                popUpTo(NavigationTab.CHAT.route) { inclusive = true }
+                                            }
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
